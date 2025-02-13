@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة المملكة العربية السعودية</title>
+    <!-- إضافة مكتبة Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- إضافة خط Almarai من Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Almarai', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #333;
+            font-size: 2rem; /* حجم أصغر للعناوين على الجوال */
+            font-weight: 700;
+        }
+        #map {
+            width: 90%;
+            height: 400px; /* ارتفاع أقل لتناسب الجوال */
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .city-info {
+            display: none;
+            width: 90%; /* عرض أكبر لتناسب الجوال */
+            margin: 20px auto;
+            padding: 15px; /* حشوة أقل لتناسب الجوال */
+            background-color: #ffffff; /* خلفية بيضاء */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: right;
+            color: #333; /* لون النص داكن */
+            background-image: url('https://www.transparenttextures.com/patterns/white-texture.png'); /* تأثير الرخام */
+        }
+        .city-info h2 {
+            color: #007BFF; /* لون أزرق */
+            font-size: 1.5rem; /* حجم أصغر للعناوين على الجوال */
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .city-info p {
+            color: #555; /* لون رمادي داكن */
+            line-height: 1.6; /* تباعد أقل لتناسب الجوال */
+            font-size: 1rem; /* حجم أصغر للنص على الجوال */
+            font-weight: 300;
+        }
+        .city-info ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .city-info ul li {
+            background-color: #f8f9fa; /* خلفية فاتحة */
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: right;
+            font-size: 0.9rem; /* حجم أصغر للنص على الجوال */
+            color: #333; /* لون النص داكن */
+            font-weight: 400;
+        }
+        .footer {
+            width: 90%; /* عرض أكبر لتناسب الجوال */
+            margin: 20px auto;
+            padding: 15px; /* حشوة أقل لتناسب الجوال */
+            background-color: #ffffff; /* خلفية بيضاء */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #333; /* لون النص داكن */
+            font-size: 1rem; /* حجم أصغر للنص على الجوال */
+            background-image: url('https://www.transparenttextures.com/patterns/white-texture.png'); /* تأثير الرخام */
+        }
+        .footer a {
+            color: #007BFF; /* لون أزرق */
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* تحسينات إضافية للجوال */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem; /* حجم أصغر للعناوين على الجوال */
+            }
+            #map {
+                height: 300px; /* ارتفاع أقل لتناسب الجوال */
+            }
+            .city-info h2 {
+                font-size: 1.3rem; /* حجم أصغر للعناوين على الجوال */
+            }
+            .city-info p {
+                font-size: 0.9rem; /* حجم أصغر للنص على الجوال */
+            }
+            .city-info ul li {
+                font-size: 0.8rem; /* حجم أصغر للنص على الجوال */
+            }
+            .footer {
+                font-size: 0.9rem; /* حجم أصغر للنص على الجوال */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>خريطة المملكة العربية السعودية</h1>
+    
+    <!-- عنصر الخريطة -->
+    <div id="map"></div>
+
+    <!-- قسم معلومات المدينة -->
+    <div id="city-info" class="city-info">
+        <h2 id="city-name"></h2>
+        <p id="city-description"></p>
+        <h3>أهم المعالم:</h3>
+        <ul id="city-landmarks"></ul>
+    </div>
+
+    <!-- قسم الفوتر -->
+    <div class="footer">
+        <p>HeeMaa</p>
+        <p><a href="mailto:adwee45@gmail.com">adwee45@gmail.com</a></p>
+        <p>00201004426911</p>
+    </div>
+
+    <!-- إضافة مكتبة Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // إنشاء الخريطة
+        const map = L.map('map').setView([23.8859, 45.0792], 5);
+
+        // إضافة طبقة الخريطة من OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '' // تم حذف الكلمة هنا
+        }).addTo(map);
+
+        // بيانات المدن
+        const cityData = [
+            {
+                name: 'الرياض',
+                description: 'الرياض هي عاصمة المملكة العربية السعودية. تشتهر بالمعالم الحديثة مثل برج المملكة ومركز الملك عبد الله المالي.',
+                landmarks: ['برج المملكة', 'مركز الملك عبد الله المالي', 'قصر المصمك'],
+                coordinates: [24.7136, 46.6753]
+            },
+            {
+                name: 'جدة',
+                description: 'جدة هي مدينة ساحلية على البحر الأحمر وتعتبر بوابة مكة المكرمة. تشتهر بالكورنيش وميناء جدة الإسلامي.',
+                landmarks: ['كورنيش جدة', 'نافورة الملك فهد', 'ميناء جدة الإسلامي'],
+                coordinates: [21.4858, 39.1925]
+            },
+            {
+                name: 'مكة المكرمة',
+                description: 'مكة المكرمة هي أقدس مدينة في الإسلام، وتضم المسجد الحرام والكعبة المشرفة.',
+                landmarks: ['الكعبة المشرفة', 'المسجد الحرام', 'جبل عرفة'],
+                coordinates: [21.3891, 39.8579]
+            },
+            {
+                name: 'المدينة المنورة',
+                description: 'المدينة المنورة هي ثاني أقدس مدينة في الإسلام، وتضم المسجد النبوي وقبر النبي محمد صلى الله عليه وسلم.',
+                landmarks: ['المسجد النبوي', 'قبر النبي محمد صلى الله عليه وسلم', 'جبل أحد'],
+                coordinates: [24.5247, 39.5692]
+            },
+            {
+                name: 'الدمام',
+                description: 'الدمام هي مدينة ساحلية على الخليج العربي وتعتبر مركزًا اقتصاديًا مهمًا في المنطقة الشرقية.',
+                landmarks: ['كورنيش الدمام', 'جزيرة المرجان', 'واجهة الدمام البحرية'],
+                coordinates: [26.4207, 50.0888]
+            },
+            {
+                name: 'الخرج',
+                description: 'الخرج هي محافظة في منطقة الرياض تشتهر بوجود وادي حنيفة والعديد من المزارع.',
+                landmarks: ['وادي حنيفة', 'مزرعة الخرج', 'قصر الملك عبد العزيز'],
+                coordinates: [24.1554, 47.3346]
+            },
+            {
+                name: 'الطائف',
+                description: 'الطائف هي مدينة جبلية تشتهر بمناخها المعتدل وطبيعتها الخلابة.',
+                landmarks: ['قصر شبرا', 'سوق عكاظ', 'منتزه الردف'],
+                coordinates: [21.4373, 40.5127]
+            },
+            {
+                name: 'تبوك',
+                description: 'تبوك هي مدينة تاريخية في شمال المملكة وتشتهر بقلعتها القديمة.',
+                landmarks: ['قلعة تبوك', 'حديقة الأمير فهد بن سلطان', 'متحف تبوك الإقليمي'],
+                coordinates: [28.3835, 36.5662]
+            },
+            {
+                name: 'أبها',
+                description: 'أبها هي عاصمة منطقة عسير وتشتهر بجمالها الطبيعي.',
+                landmarks: ['قصر شدا', 'منتزه السودة', 'قرية المفتاحة'],
+                coordinates: [18.2300, 42.5001]
+            },
+            {
+                name: 'حائل',
+                description: 'حائل هي مدينة في شمال المملكة وتشتهر بجبل أجا وسلمى وتراثها الثقافي.',
+                landmarks: ['جبل أجا', 'جبل سلمى', 'قصر برزان'],
+                coordinates: [27.5211, 41.6907]
+            },
+            {
+                name: 'القصيم',
+                description: 'القصيم هي منطقة زراعية تشتهر بالنخيل والتمور.',
+                landmarks: ['مزرعة النخيل', 'وادي الرمة', 'سوق التمور'],
+                coordinates: [26.3300, 43.9700]
+            },
+            {
+                name: 'الجوف',
+                description: 'الجوف هي منطقة في شمال المملكة وتشتهر بآثارها القديمة وزراعة الزيتون.',
+                landmarks: ['قلعة زعبل', 'آثار دومة الجندل', 'مزارع الزيتون'],
+                coordinates: [29.8874, 39.3206]
+            },
+            {
+                name: 'الأحساء',
+                description: 'الأحساء هي أكبر واحة نخيل في العالم وتشتهر بتراثها الثقافي والزراعي.',
+                landmarks: ['واحة الأحساء', 'قصر إبراهيم', 'بحيرة الأصفر'],
+                coordinates: [25.3833, 49.5833]
+            }
+        ];
+
+        // إضافة علامات للمدن
+        cityData.forEach(city => {
+            const marker = L.marker(city.coordinates).addTo(map);
+            marker.bindPopup(`
+                <b>${city.name}</b><br>
+                ${city.description}
+            `);
+        });
+
+        // تفاعل معلومات المدينة
+        const cityInfoDiv = document.getElementById('city-info');
+        const cityName = document.getElementById('city-name');
+        const cityDescription = document.getElementById('city-description');
+        const cityLandmarks = document.getElementById('city-landmarks');
+
+        cityData.forEach(city => {
+            const marker = L.marker(city.coordinates).addTo(map);
+            marker.on('click', () => {
+                cityName.textContent = city.name;
+                cityDescription.textContent = city.description;
+                cityLandmarks.innerHTML = city.landmarks.map(landmark => `<li>${landmark}</li>`).join('');
+                cityInfoDiv.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
